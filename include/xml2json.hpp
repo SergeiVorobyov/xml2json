@@ -25,7 +25,8 @@
 
 /* [Start] This part is configurable */
 static const char xml2json_text_additional_name[] = "#text";
-static const char xml2json_attribute_name_prefix[] = "@";
+// Workaround for naming convention (probably it is not needed, we need to realize on consumer's side why '@' is not suitable here).
+static const char xml2json_attribute_name_prefix[] = "";
 /* Example:
    <node_name attribute_name="attribute_value">value</node_name> ---> "node_name":{"#text":"value","@attribute_name":"attribute_value"}
 */
@@ -101,7 +102,16 @@ void xml2json_add_attributes(rapidxml::xml_node<> *xmlnode, rapidjson::Value &js
 
         if (xml2json_numeric_support == false)
         {
-            jv.SetString(myattr->value(), allocator);
+            // Workaround for boolean (probably it is not needed, we need to realize on consumer's side).
+            const std::string value(myattr->value());
+            if (value == "true" || value == "false")
+            {
+                jv.SetBool(value == "true");
+            }
+            else
+            {
+                jv.SetString(myattr->value(), allocator);
+            }
         }
         else
         {
